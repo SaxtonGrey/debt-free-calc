@@ -1,38 +1,170 @@
+* {
+  box-sizing: border-box;
+}
+
+input[type="number"] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .App {
   text-align: center;
+  margin: 1rem;
+  margin-bottom: 3rem;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.debt-form-container {
+  background-color: rgb(250, 250, 250);
+  padding: 1rem;
+  border-radius: 20px;
+  margin: 1rem auto;
+  display: flex;
+  max-width: 1200px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.debt-form {
+  padding: 1rem; 
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1.5rem;
+  margin: auto;
+  background-color: rgba(161, 255, 181, 0.274);
+  color: black;
+  border-radius: 15px;
+  width: 100%;
+  
+}
+
+.debt-form div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.debt-form div label {
+  background-color: rgba(161, 255, 181, 0.795);
+  text-align: center;
+  padding: 10px;
+  width: -moz-fit-content;
+  width: fit-content;
+  border-radius: 10px;
+} 
+
+.debt-form div input {
+  border-radius: 5px;
+  outline: 1px solid rgba(0, 0, 0, 0.116);
+  border: none;
+  padding: 0 10px;
+  background: transparent;
+  height: 40px;
+  margin: auto;
+}
+
+.debt-form button {
+  width: -moz-fit-content;
+  width: fit-content;
+  padding: 0 3rem;
+}
+
+.debt-form div.dollar-input,
+#interestRateInput {
+  position: relative;
+  display: block;
+  height: fit-content;
+  margin: auto;
+}
+
+.dollar-sign {
+  position: absolute;
+  left: 10px; 
+  top: 50%;
+  transform: translateY(-54%);
+}
+
+#totalDebt {
+  padding-left: 25px;
+  padding-right: 0;
+}
+
+#interestRateInput {
+  position: relative;
+}
+
+#interestRateSymbol {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.debt-calc-container {
+  width: 50%;
+}
+
+.debt-calc {
+  position: relative;
+}
+
+.debt-calc .result {
+  width: 100%;
+}
+
+.debt-calc .breakdown {
+  margin: 0 auto;
+  width: 100%;
+  overflow-x: scroll;
+}
+
+.breakdown table {
+  overflow-x: scroll;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.breakdown table, th, td {
+  border: 1px solid;
+}
+
+.breakdown table thead tr.mobile {
+  display: none;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-item {
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 1rem;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-width: 769px) {
+  .debt-form-container {
+    flex-direction: column;
+    justify-content: center;
   }
-  to {
-    transform: rotate(360deg);
+
+  .debt-form {
+    gap: 20px;
+  }
+
+  .debt-form div label {
+    width: -moz-fit-content;
+    width: fit-content;
+  }
+
+  .debt-calc-container {
+    width: 90%;
+    margin-top: 1rem;
   }
 }
