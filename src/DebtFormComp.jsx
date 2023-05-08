@@ -9,8 +9,20 @@ class DebtFormComp extends React.Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-    const { totalDebt, interestRate, loanTerm } = this.state
-    this.setState({ totalDebt, interestRate, loanTerm, calculated: true });
+  
+    const { totalDebt, interestRate, loanTerm } = this.state;
+  
+    let newLoanTerm = loanTerm;
+    if (loanTerm === 0.00 || loanTerm === "0") {
+      console.log('...working');
+      
+      const tempMonthInt = parseFloat(((interestRate / 1200) * totalDebt).toFixed(2));
+      const tempTotalDebt = totalDebt + tempMonthInt;
+      const minPayment = tempTotalDebt * 0.01;
+      newLoanTerm = tempTotalDebt / minPayment;
+      console.log(newLoanTerm);
+    }  
+    this.setState({ totalDebt, interestRate, loanTerm: newLoanTerm, calculated: true });
   };
   
 
@@ -64,7 +76,7 @@ class DebtFormComp extends React.Component {
           </div>
           <button type="submit">Calculate</button>
         </form>
-        <div className='debt-calc-container'>
+        <div className='debt-calc-container slide-up-animation'>
           {!calculated && <h2>Enter in your debt to see breakdown</h2>}
           {calculated && (
             <CalcDebtComp

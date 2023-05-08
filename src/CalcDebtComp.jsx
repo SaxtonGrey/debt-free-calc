@@ -51,6 +51,8 @@ class CalcDebtComp extends React.Component {
       breakdown
     });
   }
+  
+  
 
   handleAmountChange = (event) => {
     let amount = parseFloat(event.target.value) 
@@ -101,7 +103,7 @@ class CalcDebtComp extends React.Component {
             <thead>
               <tr>
                 <th>Month</th>
-                <th>Monthly Payment</th>
+                <th>Payment</th>
                 <th>Interest Paid</th>
                 <th>Principal Paid</th>
                 <th>Balance</th>
@@ -123,12 +125,12 @@ class CalcDebtComp extends React.Component {
     const newTotalDebt = parseFloat((totalDebt - floatPaymentAmount).toFixed(2));
     const newLoanTerm = loanTerm - 1;
   
-    if (floatPaymentAmount < (parseFloat(totalDebt) * 0.01)) {
+    if (floatPaymentAmount < (parseFloat(totalDebt) * 0.01) || floatPaymentAmount === 0) {
       alert('Payment must be greater than 1% of total/remaining debt');
       return;
     }
 
-    if (newLoanTerm === 0 && newTotalDebt <= 0) {
+    if (newLoanTerm === 0 || newTotalDebt <= 0) {
       alert('Congratulations! You have paid off your loan.');
       return;
     }
@@ -152,14 +154,21 @@ class CalcDebtComp extends React.Component {
       paymentAmount: '',
     }, this.calculateBreakdown, this.displayBreakdown);
   }
+
+  scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
   
   render() {
     const { paymentAmount, payments } = this.state;
     return (
       <>
         
-        {this.displayBreakdown()}
-        <div className="make-payment">
+        <div className='slide-up-animation'>{this.displayBreakdown()}</div>
+        <div className="make-payment fade-in">
           <h3>Make a Payment to Recalculate Debt</h3>
           <form onSubmit={(event) => this.makePayment(event, paymentAmount)}>
             <label htmlFor="paymentAmount">Payment Amount:</label>
@@ -167,7 +176,7 @@ class CalcDebtComp extends React.Component {
             <button type="submit">Submit</button>
           </form>
         </div>
-        <div>
+        <div className='payment-history fade-in'>
           <h2>Payment History</h2>
           <ul>
             {payments.map((payment, index) => (
@@ -175,6 +184,7 @@ class CalcDebtComp extends React.Component {
             ))}
           </ul>
         </div>
+        <div onClick={this.scrollToTop} className='back-to-top'><i className='fa-solid fa-arrow-up'><br /><span>Back to Top</span></i></div>
       </>
     );
   }

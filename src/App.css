@@ -1,5 +1,18 @@
 * {
   box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.slide-up-animation {
+  animation-name: slideUp;
+  animation-duration: 1s;
+  animation-timing-function: ease;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+  animation-duration: 1.25s;
+  animation-timing-function: ease;
 }
 
 input[type="number"] {
@@ -11,7 +24,6 @@ input[type="number"] {
 .App {
   text-align: center;
   margin: 1rem;
-  margin-bottom: 3rem;
 }
 
 .debt-form-container {
@@ -20,8 +32,7 @@ input[type="number"] {
   border-radius: 20px;
   margin: 1rem auto;
   display: flex;
-  max-width: 1200px;
-  flex-direction: row;
+  max-width: 1069px;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -29,27 +40,31 @@ input[type="number"] {
 
 .debt-form {
   padding: 1rem; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  margin: auto;
-  background-color: rgba(161, 255, 181, 0.274);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  justify-items: center;
+  row-gap: 1rem;
+  margin: 0px auto 20px;
+  background-color: rgba(236, 236, 236, 0.575);
+  border: 2px solid rgb(216, 216, 216);
   color: black;
   border-radius: 15px;
   width: 100%;
-  
 }
 
-.debt-form div {
+.debt-form div,
+.make-payment form {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
-.debt-form div label {
-  background-color: rgba(161, 255, 181, 0.795);
+.debt-form div label,
+.make-payment label {
+  background-color: rgba(209, 209, 209, 0.795);
   text-align: center;
   padding: 10px;
   width: -moz-fit-content;
@@ -57,20 +72,39 @@ input[type="number"] {
   border-radius: 10px;
 } 
 
-.debt-form div input {
+.debt-form div input,
+.make-payment form input {
   border-radius: 5px;
-  outline: 1px solid rgba(0, 0, 0, 0.116);
+  outline: 2px solid rgba(6, 111, 248, 0.514);
   border: none;
   padding: 0 10px;
   background: transparent;
   height: 40px;
+  width: 100%;
   margin: auto;
+  text-align: center;
 }
 
-.debt-form button {
+.debt-form button, 
+.make-payment form button {
+  grid-column: 2 / 3;
   width: -moz-fit-content;
   width: fit-content;
-  padding: 0 3rem;
+  height: -moz-fit-content;
+  height: fit-content;
+  padding: 1rem 2rem;
+  color: rgb(6, 111, 248);
+  font-weight: 700;
+  font-size: 16px;
+  background-color: white;
+  border: 1px solid  rgba(6, 111, 248, 0.514);
+  border-radius: 10px;
+}
+
+.debt-form button:hover, 
+.make-payment form button:hover {
+  cursor: pointer;
+  background-color: rgb(224, 224, 224);
 }
 
 .debt-form div.dollar-input,
@@ -105,7 +139,11 @@ input[type="number"] {
 }
 
 .debt-calc-container {
-  width: 50%;
+  width: 90%;
+  padding: 20px 50px;
+  background-color: white;
+  border: 1px solid rgb(233, 233, 233);
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.295);
 }
 
 .debt-calc {
@@ -128,12 +166,13 @@ input[type="number"] {
   width: 100%;
 }
 
-.breakdown table, th, td {
-  border: 1px solid;
+.breakdown table, th {
+  border: 1px solid rgba(6, 111, 248, 0.534);
 }
 
-.breakdown table thead tr.mobile {
-  display: none;
+.breakdown td {
+  border: 1px solid;
+  border-top: none;
 }
 
 .result {
@@ -148,14 +187,50 @@ input[type="number"] {
   gap: 1rem;
 }
 
+.make-payment,
+.payment-history {
+  background-color: rgba(236, 236, 236, 0.575);
+  padding: 10px 0px;
+}
+
+.make-payment {
+  margin-top: 15px;
+}
+
+.make-payment form {
+  width: -moz-fit-content;
+  width: fit-content;
+  margin: auto;
+  padding: 0 15px;
+}
+
+.payment-history ul {
+  width: -moz-fit-content;
+  width: fit-content;
+  margin: auto;
+  list-style: upper-roman;
+  padding: 0;
+}
+
+.back-to-top{
+  background-color: rgb(219, 219, 219);
+  margin-top: 5px;
+  padding: 5px;
+}
+
 @media (max-width: 769px) {
   .debt-form-container {
     flex-direction: column;
     justify-content: center;
+    padding: 0;
   }
 
   .debt-form {
-    gap: 20px;
+    grid-template-columns: 1fr;
+  }
+
+  .debt-form button {
+    grid-column: inherit;
   }
 
   .debt-form div label {
@@ -164,7 +239,31 @@ input[type="number"] {
   }
 
   .debt-calc-container {
-    width: 90%;
+    width: 100%;
     margin-top: 1rem;
+    padding: 10px;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
