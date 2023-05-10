@@ -7,52 +7,56 @@ class CalcDebtComp extends React.Component {
     const floatTotalDebt = parseFloat(totalDebt.toFixed(2));
     const floatInterestRate = parseFloat(interestRate.toFixed(2));
     const intLoanTerm = parseInt(loanTerm);
-    const monthlyPayment = ((floatInterestRate / 1200) * floatTotalDebt) + (floatTotalDebt / intLoanTerm);
-    const monthlyInterestPaid = ((floatInterestRate / 1200) * floatTotalDebt);
-    const totalInterestPaid = ((floatInterestRate / 1200) * floatTotalDebt * intLoanTerm);
+    const monthlyInterest = parseFloat(((floatInterestRate / 1200) * floatTotalDebt).toFixed(2));
+    const monthlyPrincipal = ((floatTotalDebt / intLoanTerm));
 
     this.state = {
-      totalDebt: (parseFloat(floatTotalDebt) + parseFloat(totalInterestPaid)).toFixed(2),
+      totalDebt: parseFloat((floatTotalDebt + monthlyInterest).toFixed(2)),
       interestRate: floatInterestRate,
       loanTerm: intLoanTerm,
-      monthlyPayment: parseFloat(monthlyPayment.toFixed(2)),
-      monthlyInterestPaid: parseFloat(monthlyInterestPaid.toFixed(2)),
-      monthlyPrincipal: Number((monthlyPayment - monthlyInterestPaid).toFixed(2)),
+      monthlyPayment: parseFloat((monthlyPrincipal + monthlyInterest).toFixed(2)),
+      monthlyInterest: monthlyInterest,
+      monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(2)),
       breakdown: [],
-      totalInterestPaid: parseFloat(totalInterestPaid.toFixed(2)),
       payments: [],
       paymentAmount: '',
+      interestPaid: 0.00,
     };
   }
 
   componentDidMount() {
-    const { monthlyPayment, monthlyInterestPaid } = this.state;
-    const monthlyPrincipal = (monthlyPayment - monthlyInterestPaid).toFixed(2);
-    this.setState({ monthlyPrincipal });
     this.calculateBreakdown();
   }
 
   calculateBreakdown = () => {
-    const { totalDebt, totalInterestPaid, loanTerm, monthlyPayment, monthlyPrincipal } = this.state;
-    const monthlyInterest = (totalInterestPaid / loanTerm).toFixed(2);
-    let balance = parseFloat(totalDebt);
-    let interestPaid = 0.00;
-    let principalPaid = 0.00;
+    const { totalDebt, interestRate, loanTerm, monthlyPrincipal, monthlyInterest } = this.state;
+    let balance = totalDebt - monthlyInterest;
+    let totalInterestPaid = 0.00;
     let breakdown = [];
-
+  
     for (let i = 1; i <= loanTerm; i++) {
-      interestPaid += parseFloat(monthlyInterest);
-      principalPaid += parseFloat(monthlyPrincipal);
-      balance = Number((balance - monthlyPayment).toFixed(2));
-      breakdown.push({ month: i, monthlyPayment: parseFloat(monthlyPayment.toFixed(2)), interestPaid: parseFloat(interestPaid.toFixed(2)), principalPaid, balance });
+      const monthlyInterest = (interestRate / 1200) * balance;
+      const monthlyPayment = parseFloat((monthlyPrincipal + monthlyInterest).toFixed(2));
+      totalInterestPaid += monthlyInterest;
+      balance -= monthlyPrincipal;
+      if (i === loanTerm) {
+        balance = 0.00;
+      }
+  
+      breakdown.push({
+        month: i,
+        monthlyPayment: monthlyPayment,
+        interestPaid: monthlyInterest,
+        principalPaid: parseFloat(monthlyPrincipal),
+        balance: parseFloat(balance.toFixed(2))
+      });
     }
-
+  
     this.setState({
-      breakdown
+      breakdown,
+      interestPaid: parseFloat(totalInterestPaid.toFixed(2))
     });
   }
-  
-  
 
   handleAmountChange = (event) => {
     let amount = parseFloat(event.target.value) 
@@ -60,14 +64,14 @@ class CalcDebtComp extends React.Component {
   }
 
   displayBreakdown = () => {
-    const { totalDebt, loanTerm, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterestPaid } = this.state;
+    const { totalDebt, interestPaid, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterest } = this.state;
     const breakdownList = breakdown.map(item => {
       return (
         <tr key={item.month}>
           <td>{item.month}</td>
-          <td>${item.monthlyPayment.toFixed(2)}</td>
+          <td>${item.monthlyPayment}</td>
           <td>${item.interestPaid.toFixed(2)}</td>
-          <td>${item.principalPaid.toFixed(2)}</td>
+          <td>${item.principalPaid}</td>
           <td>${item.balance.toFixed(2)}</td>
         </tr>
       );
@@ -82,11 +86,11 @@ class CalcDebtComp extends React.Component {
           </div>
           <div className="result-item">
             <div className="result-label">Monthly Payment:</div>
-            <div className="result-value">${monthlyPayment.toFixed(2)}</div>
+            <div className="result-value">${monthlyPayment}</div>
           </div>
           <div className="result-item">
             <div className="result-label">Monthly Interest Paid:</div>
-            <div className="result-value">${monthlyInterestPaid.toFixed(2)}</div>
+            <div className="result-value">${monthlyInterest}</div>
           </div>
           <div className="result-item">
             <div className="result-label">Monthly Principal Paid:</div>
@@ -94,7 +98,7 @@ class CalcDebtComp extends React.Component {
           </div>
           <div className="result-item">
             <div className="result-label">Total Interest Paid:</div>
-            <div className="result-value">${(monthlyInterestPaid * loanTerm).toFixed(2)}</div>
+            <div className="result-value">${interestPaid}</div>
           </div>
         </div>
         <div className="breakdown">
@@ -122,38 +126,46 @@ class CalcDebtComp extends React.Component {
     event.preventDefault();
     const { totalDebt, loanTerm, payments, paymentAmount } = this.state;
     const floatPaymentAmount = parseFloat(paymentAmount);
-    const newTotalDebt = parseFloat((totalDebt - floatPaymentAmount).toFixed(2));
-    const newLoanTerm = loanTerm - 1;
+    const newTotalDebt = parseFloat(totalDebt) - floatPaymentAmount;
+    let newLoanTerm = loanTerm - 1;
   
     if (floatPaymentAmount < (parseFloat(totalDebt) * 0.01) || floatPaymentAmount === 0) {
       alert('Payment must be greater than 1% of total/remaining debt');
       return;
     }
-
-    if (newLoanTerm === 0 || newTotalDebt <= 0) {
-      alert('Congratulations! You have paid off your loan.');
-      return;
-    }
   
-    const newMonthlyPayment = parseFloat((newTotalDebt / newLoanTerm).toFixed(2));
+    if (newLoanTerm === 0 || newTotalDebt <= 0) {
+      newLoanTerm = 1;
+      alert('Congratulations! You have paid off your loan.');
+    }
+
+    const newMonthlyPrincipal = parseFloat((newTotalDebt / newLoanTerm).toFixed(2));
     const newMonthlyInterestPaid = ((this.state.interestRate / 1200) * newTotalDebt);
-    const newTotalInterest = newMonthlyInterestPaid * newLoanTerm;
-    const newMonthlyPrincipal = parseFloat((newMonthlyPayment - newMonthlyInterestPaid).toFixed(2));
+    const newMonthlyPayment = parseFloat((newMonthlyPrincipal + newMonthlyInterestPaid).toFixed(2));
     const newPayments = [...payments, floatPaymentAmount];
     const newBalance = parseFloat((newTotalDebt - newMonthlyPrincipal).toFixed(2));
   
-    this.setState({
-      payments: newPayments,
-      totalDebt: newTotalDebt,
-      loanTerm: newLoanTerm,
-      totalInterestPaid: newTotalInterest,
-      monthlyPayment: newMonthlyPayment,
-      monthlyInterestPaid: newMonthlyInterestPaid,
-      monthlyPrincipal: newMonthlyPrincipal,
-      balance: newBalance,
-      paymentAmount: '',
-    }, this.calculateBreakdown, this.displayBreakdown);
+    this.setState(
+      {
+        payments: newPayments,
+        totalDebt: (newTotalDebt + newMonthlyInterestPaid).toFixed(2),
+        loanTerm: newLoanTerm,
+        monthlyPayment: newMonthlyPayment,
+        monthlyInterest: newMonthlyInterestPaid.toFixed(2),
+        monthlyPrincipal: newMonthlyPrincipal,
+        balance: newBalance,
+        paymentAmount: '',
+      },
+    );
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.totalDebt !== this.state.totalDebt) {
+      this.calculateBreakdown();
+      this.displayBreakdown();
+    }
+  }
+  
 
   scrollToTop = () => {
     window.scrollTo({
@@ -172,7 +184,7 @@ class CalcDebtComp extends React.Component {
           <h3>Make a Payment to Recalculate Debt</h3>
           <form onSubmit={(event) => this.makePayment(event, paymentAmount)}>
             <label htmlFor="paymentAmount">Payment Amount:</label>
-            <input type="number" id="paymentAmount" name="paymentAmount" step={0.01} value={paymentAmount} onChange={this.handleAmountChange} />
+            <input type="number" id="paymentAmount" name="paymentAmount" step={0.01} onChange={this.handleAmountChange} />
             <button type="submit">Submit</button>
           </form>
         </div>

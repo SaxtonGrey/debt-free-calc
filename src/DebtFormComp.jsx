@@ -9,21 +9,12 @@ class DebtFormComp extends React.Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-  
     const { totalDebt, interestRate, loanTerm } = this.state;
-  
-    let newLoanTerm = loanTerm;
-    if (loanTerm === 0.00 || loanTerm === "0") {
-      console.log('...working');
-      
-      const tempMonthInt = parseFloat(((interestRate / 1200) * totalDebt).toFixed(2));
-      const tempTotalDebt = totalDebt + tempMonthInt;
-      const minPayment = tempTotalDebt * 0.01;
-      newLoanTerm = tempTotalDebt / minPayment;
-      console.log(newLoanTerm);
-    }  
+    const minPayment = totalDebt * 0.01;
+    const newLoanTerm = loanTerm === 0.00 || loanTerm === "0" ? (totalDebt / minPayment).toString() : loanTerm.toString();
     this.setState({ totalDebt, interestRate, loanTerm: newLoanTerm, calculated: true });
   };
+  
   
 
   render() {
