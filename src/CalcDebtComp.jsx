@@ -65,52 +65,59 @@ class CalcDebtComp extends React.Component {
 
   displayBreakdown = () => {
     const { totalDebt, interestPaid, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterest } = this.state;
-    const breakdownList = breakdown.map(item => {
-      return (
-        <tr key={item.month}>
-          <td>{item.month}</td>
-          <td>${item.monthlyPayment}</td>
-          <td>${item.interestPaid.toFixed(2)}</td>
-          <td>${item.principalPaid}</td>
-          <td>${item.balance.toFixed(2)}</td>
-        </tr>
-      );
+    
+    const resultItems = [
+      { label: 'Total Debt:', value: totalDebt },
+      { label: 'Monthly Payment:', value: monthlyPayment },
+      { label: 'Monthly Interest Paid:', value: monthlyInterest },
+      { label: 'Monthly Principal Paid:', value: monthlyPrincipal },
+      { label: 'Total Interest Paid:', value: interestPaid }
+    ];
+    
+    const resultItemElements = resultItems.map((item, index) => (
+      <div className="result-item" key={index}>
+        <div className="result-label">{item.label}</div>
+        <div className="result-value">${item.value}</div>
+      </div> 
+    ));
+
+    const tableHeaders = [
+      'Month',
+      'Payment',
+      'Interest Paid',
+      'Principal Paid',
+      'Balance'
+    ];
+    
+    const tableHeaderElements = tableHeaders.map((header, index) => (
+      <th key={index}>{header}</th>
+    ));
+
+    const breakdownList = breakdown.map(({ month, monthlyPayment, interestPaid, principalPaid, balance }) => {
+      const rowData = [
+        month,
+        monthlyPayment,
+        interestPaid.toFixed(2),
+        principalPaid,
+        balance.toFixed(2)
+      ];
+      const tableData = rowData.map((data, index) => (
+        <td key={index}>{index === 0 ? data : `$${data}`}</td>
+      ));
+      return <tr key={month}>{tableData}</tr>;
     });
 
     return (
       <div className="debt-calc">
         <div className="result">
-          <div className="result-item">
-            <div className="result-label">Total Debt:</div>
-            <div className="result-value">${totalDebt}</div>
-          </div>
-          <div className="result-item">
-            <div className="result-label">Monthly Payment:</div>
-            <div className="result-value">${monthlyPayment}</div>
-          </div>
-          <div className="result-item">
-            <div className="result-label">Monthly Interest Paid:</div>
-            <div className="result-value">${monthlyInterest}</div>
-          </div>
-          <div className="result-item">
-            <div className="result-label">Monthly Principal Paid:</div>
-            <div className="result-value">${monthlyPrincipal}</div>
-          </div>
-          <div className="result-item">
-            <div className="result-label">Total Interest Paid:</div>
-            <div className="result-value">${interestPaid}</div>
-          </div>
+          {resultItemElements}
         </div>
         <div className="breakdown">
           <h2>Payment Breakdown</h2>
           <table>
             <thead>
               <tr>
-                <th>Month</th>
-                <th>Payment</th>
-                <th>Interest Paid</th>
-                <th>Principal Paid</th>
-                <th>Balance</th>
+                {tableHeaderElements}
               </tr>
             </thead>
             <tbody>
@@ -166,7 +173,6 @@ class CalcDebtComp extends React.Component {
     }
   }
   
-
   scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -178,7 +184,6 @@ class CalcDebtComp extends React.Component {
     const { paymentAmount, payments } = this.state;
     return (
       <>
-        
         <div className='slide-up-animation'>{this.displayBreakdown()}</div>
         <div className="make-payment fade-in">
           <h3>Make a Payment to Recalculate Debt</h3>
@@ -191,9 +196,13 @@ class CalcDebtComp extends React.Component {
         <div className='payment-history fade-in'>
           <h2>Payment History</h2>
           <ul>
-            {payments.map((payment, index) => (
-              <li key={index}>${payment}</li>
-            ))}
+            {payments.length ? (
+              payments.map((payment, index) => (
+                <li key={index}>${payment}</li>
+              ))
+            ) : (
+              <li>No Payments Made</li>
+            )}
           </ul>
         </div>
         <div onClick={this.scrollToTop} className='back-to-top'><i className='fa-solid fa-arrow-up'><br /><span>Back to Top</span></i></div>

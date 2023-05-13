@@ -150,6 +150,8 @@ input[type="number"] {
 
 .debt-calc {
   position: relative;
+  margin-top: 25px;
+  margin-bottom: 15px;
 }
 
 .debt-calc .result {
