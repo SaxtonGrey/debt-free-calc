@@ -25,11 +25,10 @@ class CalcDebtComp extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.calculateBreakdown();
-  }
+  
 
   calculateBreakdown = () => {
+    console.log("...calculating");
     const { totalDebt, interestRate, loanTerm, monthlyPrincipal, monthlyInterest } = this.state;
     let balance = totalDebt - monthlyInterest;
     let totalInterestPaid = 0.00;
@@ -60,9 +59,13 @@ class CalcDebtComp extends React.Component {
   }
 
   handleAmountChange = (event) => {
-    let amount = parseFloat(event.target.value); 
+    let amount = parseFloat(event.target.value);
+    if (isNaN(amount)) {
+      amount = 0;
+    }
     this.setState({ paymentAmount: amount });
   }
+  
 
   scrollToTop = () => {
     window.scrollTo({
@@ -78,6 +81,16 @@ class CalcDebtComp extends React.Component {
     });
   }
 
+  componentDidMount() {
+    this.calculateBreakdown();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.totalDebt !== this.state.totalDebt) {
+      this.calculateBreakdown();
+    }
+  }
+  
   displayBreakdown = () => {
     const { totalDebt, interestPaid, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterest } = this.state;
     
@@ -86,7 +99,7 @@ class CalcDebtComp extends React.Component {
       { label: 'Monthly Payment:', value: monthlyPayment.toFixed(2) },
       { label: 'Monthly Interest Paid:', value: monthlyInterest.toFixed(2) },
       { label: 'Monthly Principal Paid:', value: monthlyPrincipal.toFixed(2) },
-      { label: 'Total Interest Paid:', value: interestPaid.toFixed(2) }
+      { label: 'Total Projected Interest:', value: interestPaid.toFixed(2) }
     ];
     
     const resultItemElements = resultItems.map((item, index) => (
@@ -148,12 +161,12 @@ class CalcDebtComp extends React.Component {
     event.preventDefault();
     const { totalDebt, interestRate, loanTerm, paymentAmount, minimumPayment } = this.state;
     const floatPaymentAmount = parseFloat(paymentAmount);
-    
+  
     if (parseFloat(floatPaymentAmount.toFixed(2)) < minimumPayment) {
       alert(`Payment amount must be at least $${minimumPayment}.`);
       return;
     }
-
+  
     const newLoanTerm = loanTerm - 1;
     const newTotalDebt = totalDebt - floatPaymentAmount;
     const newInterestPaid = (interestRate / 1200) * newTotalDebt;
@@ -162,7 +175,7 @@ class CalcDebtComp extends React.Component {
     const newMonthlyPayment = newMonthlyPrincipal + newInterestPaid;
     const newBalance = parseFloat((newTotalDebt - newMonthlyPrincipal).toFixed(2));
     const newPayments = [...this.state.payments, floatPaymentAmount.toFixed(2)];
-
+  
     this.setState(
       {
         payments: newPayments,
@@ -172,17 +185,10 @@ class CalcDebtComp extends React.Component {
         monthlyInterest: parseFloat(newInterestPaid.toFixed(2)),
         monthlyPrincipal: parseFloat(newMonthlyPrincipal.toFixed(2)),
         balance: newBalance,
-        paymentAmount: '',
+        paymentAmount: "0",
         minimumPayment: newMinPayment,
       }
     );
-    this.scrollToTop();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.totalDebt !== this.state.totalDebt) {
-      this.calculateBreakdown();
-    }
   }
   
   render() {
@@ -196,9 +202,12 @@ class CalcDebtComp extends React.Component {
         <div className='slide-up-animation'>{this.displayBreakdown()}</div>
         <div className="make-payment fade-in">
           <h3>Make a Payment to Recalculate Debt</h3>
-          <form onSubmit={(event) => this.makePayment(event, paymentAmount)}>
+          <form onSubmit={(event) => {
+            this.makePayment(event, paymentAmount);
+            this.scrollToTop();
+          }}>
             <label htmlFor="paymentAmount">Payment Amount:</label>
-            <input type="number" id="paymentAmount" name="paymentAmount" step={0.01} onChange={this.handleAmountChange} />
+            <input type="number" id="paymentAmount" name="paymentAmount" step={0.01} onChange={this.handleAmountChange} value={paymentAmount || ""}/>
             <button type="submit">Submit</button>
           </form>
         </div>
