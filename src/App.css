@@ -3,17 +3,6 @@
   font-family: 'Poppins', sans-serif;
 }
 
-.slide-up-animation {
-  animation-name: slideUp;
-  animation-duration: 1s;
-  animation-timing-function: ease;
-}
-
-.fade-in {
-  animation-name: fadeIn;
-  animation-duration: 1.25s;
-  animation-timing-function: ease;
-}
 
 input[type="number"] {
   -webkit-appearance: textfield;
@@ -216,10 +205,18 @@ input[type="number"] {
   padding: 0;
 }
 
-.back-to-top{
+.back-to-top,
+.scroll-to-bottom {
   background-color: rgb(219, 219, 219);
   margin-top: 5px;
   padding: 5px;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.back-to-top:hover,
+.scroll-to-bottom:hover {
+  cursor: pointer;
 }
 
 @media (max-width: 769px) {
@@ -270,4 +267,21 @@ input[type="number"] {
   100% {
     opacity: 1;
   }
+}
+
+
+.slide-up-animation {
+  animation-name: slideUp;
+  animation-duration: 1s;
+  animation-timing-function: ease;
+}
+
+.scroll-to-bottom {
+  animation-duration: 1.5s;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+  animation-duration: 1.25s;
+  animation-timing-function: ease;
 }

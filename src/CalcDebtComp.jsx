@@ -16,11 +16,12 @@ class CalcDebtComp extends React.Component {
       loanTerm: intLoanTerm,
       monthlyPayment: parseFloat((monthlyPrincipal + monthlyInterest).toFixed(2)),
       monthlyInterest: monthlyInterest,
-      monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(2)),
+      monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(3)),
       breakdown: [],
       payments: [],
       paymentAmount: '',
       interestPaid: 0.00,
+      minimumPayment: parseFloat(((floatTotalDebt * 0.01) + monthlyInterest).toFixed(2)), 
     };
   }
 
@@ -37,7 +38,7 @@ class CalcDebtComp extends React.Component {
     for (let i = 1; i <= loanTerm; i++) {
       const monthlyInterest = (interestRate / 1200) * balance;
       const monthlyPayment = parseFloat((monthlyPrincipal + monthlyInterest).toFixed(2));
-      totalInterestPaid += monthlyInterest;
+      totalInterestPaid += parseFloat(monthlyInterest.toFixed(2));
       balance -= monthlyPrincipal;
       if (i === loanTerm) {
         balance = 0.00;
@@ -59,19 +60,33 @@ class CalcDebtComp extends React.Component {
   }
 
   handleAmountChange = (event) => {
-    let amount = parseFloat(event.target.value) 
+    let amount = parseFloat(event.target.value); 
     this.setState({ paymentAmount: amount });
+  }
+
+  scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    });
   }
 
   displayBreakdown = () => {
     const { totalDebt, interestPaid, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterest } = this.state;
     
     const resultItems = [
-      { label: 'Total Debt:', value: totalDebt },
-      { label: 'Monthly Payment:', value: monthlyPayment },
-      { label: 'Monthly Interest Paid:', value: monthlyInterest },
-      { label: 'Monthly Principal Paid:', value: monthlyPrincipal },
-      { label: 'Total Interest Paid:', value: interestPaid }
+      { label: 'Total Debt:', value: totalDebt.toFixed(2) },
+      { label: 'Monthly Payment:', value: monthlyPayment.toFixed(2) },
+      { label: 'Monthly Interest Paid:', value: monthlyInterest.toFixed(2) },
+      { label: 'Monthly Principal Paid:', value: monthlyPrincipal.toFixed(2) },
+      { label: 'Total Interest Paid:', value: interestPaid.toFixed(2) }
     ];
     
     const resultItemElements = resultItems.map((item, index) => (
@@ -96,9 +111,9 @@ class CalcDebtComp extends React.Component {
     const breakdownList = breakdown.map(({ month, monthlyPayment, interestPaid, principalPaid, balance }) => {
       const rowData = [
         month,
-        monthlyPayment,
+        monthlyPayment.toFixed(2),
         interestPaid.toFixed(2),
-        principalPaid,
+        principalPaid.toFixed(2),
         balance.toFixed(2)
       ];
       const tableData = rowData.map((data, index) => (
@@ -131,59 +146,53 @@ class CalcDebtComp extends React.Component {
 
   makePayment = (event) => {
     event.preventDefault();
-    const { totalDebt, loanTerm, payments, paymentAmount } = this.state;
+    const { totalDebt, interestRate, loanTerm, paymentAmount, minimumPayment } = this.state;
     const floatPaymentAmount = parseFloat(paymentAmount);
-    const newTotalDebt = parseFloat(totalDebt) - floatPaymentAmount;
-    let newLoanTerm = loanTerm - 1;
-  
-    if (floatPaymentAmount < (parseFloat(totalDebt) * 0.01) || floatPaymentAmount === 0) {
-      alert('Payment must be greater than 1% of total/remaining debt');
+    
+    if (parseFloat(floatPaymentAmount.toFixed(2)) < minimumPayment) {
+      alert(`Payment amount must be at least $${minimumPayment}.`);
       return;
     }
-  
-    if (newLoanTerm === 0 || newTotalDebt <= 0) {
-      newLoanTerm = 1;
-      alert('Congratulations! You have paid off your loan.');
-    }
 
-    const newMonthlyPrincipal = parseFloat((newTotalDebt / newLoanTerm).toFixed(2));
-    const newMonthlyInterestPaid = ((this.state.interestRate / 1200) * newTotalDebt);
-    const newMonthlyPayment = parseFloat((newMonthlyPrincipal + newMonthlyInterestPaid).toFixed(2));
-    const newPayments = [...payments, floatPaymentAmount];
+    const newLoanTerm = loanTerm - 1;
+    const newTotalDebt = totalDebt - floatPaymentAmount;
+    const newInterestPaid = (interestRate / 1200) * newTotalDebt;
+    const newMinPayment = parseFloat(((newTotalDebt * 0.01) + newInterestPaid).toFixed(2));
+    const newMonthlyPrincipal = newTotalDebt / newLoanTerm;
+    const newMonthlyPayment = newMonthlyPrincipal + newInterestPaid;
     const newBalance = parseFloat((newTotalDebt - newMonthlyPrincipal).toFixed(2));
-  
+    const newPayments = [...this.state.payments, floatPaymentAmount.toFixed(2)];
+
     this.setState(
       {
         payments: newPayments,
-        totalDebt: (newTotalDebt + newMonthlyInterestPaid).toFixed(2),
+        totalDebt: parseFloat((newTotalDebt + newInterestPaid).toFixed(2)),
         loanTerm: newLoanTerm,
-        monthlyPayment: newMonthlyPayment,
-        monthlyInterest: newMonthlyInterestPaid.toFixed(2),
-        monthlyPrincipal: newMonthlyPrincipal,
+        monthlyPayment: parseFloat(newMonthlyPayment.toFixed(2)),
+        monthlyInterest: parseFloat(newInterestPaid.toFixed(2)),
+        monthlyPrincipal: parseFloat(newMonthlyPrincipal.toFixed(2)),
         balance: newBalance,
         paymentAmount: '',
-      },
+        minimumPayment: newMinPayment,
+      }
     );
+    this.scrollToTop();
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.totalDebt !== this.state.totalDebt) {
       this.calculateBreakdown();
-      this.displayBreakdown();
     }
-  }
-  
-  scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
   }
   
   render() {
     const { paymentAmount, payments } = this.state;
     return (
       <>
+        <div onClick={this.scrollToBottom} className="slide-up-animation scroll-to-bottom">
+          <span onClick={this.scrollToBottom}> Make Payment <br />
+           <i className="fa-solid fa-arrow-down"></i></span>
+        </div>
         <div className='slide-up-animation'>{this.displayBreakdown()}</div>
         <div className="make-payment fade-in">
           <h3>Make a Payment to Recalculate Debt</h3>
