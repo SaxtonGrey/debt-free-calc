@@ -15,20 +15,17 @@ class CalcDebtComp extends React.Component {
       interestRate: floatInterestRate,
       loanTerm: intLoanTerm,
       monthlyPayment: parseFloat((monthlyPrincipal + monthlyInterest).toFixed(2)),
+      minimumPayment: parseFloat(((floatTotalDebt * 0.01) + monthlyInterest).toFixed(2)),
       monthlyInterest: monthlyInterest,
-      monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(3)),
+      monthlyPrincipal: parseFloat(monthlyPrincipal.toFixed(2)),
       breakdown: [],
       payments: [],
       paymentAmount: '',
       interestPaid: 0.00,
-      minimumPayment: parseFloat(((floatTotalDebt * 0.01) + monthlyInterest).toFixed(2)), 
     };
   }
 
-  
-
   calculateBreakdown = () => {
-    console.log("...calculating");
     const { totalDebt, interestRate, loanTerm, monthlyPrincipal, monthlyInterest } = this.state;
     let balance = totalDebt - monthlyInterest;
     let totalInterestPaid = 0.00;
@@ -65,7 +62,6 @@ class CalcDebtComp extends React.Component {
     }
     this.setState({ paymentAmount: amount });
   }
-  
 
   scrollToTop = () => {
     window.scrollTo({
@@ -92,11 +88,12 @@ class CalcDebtComp extends React.Component {
   }
   
   displayBreakdown = () => {
-    const { totalDebt, interestPaid, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterest } = this.state;
+    const { totalDebt, interestPaid, monthlyPayment, breakdown, monthlyPrincipal, monthlyInterest, minimumPayment } = this.state;
     
     const resultItems = [
       { label: 'Total Debt:', value: totalDebt.toFixed(2) },
-      { label: 'Monthly Payment:', value: monthlyPayment.toFixed(2) },
+      { label: 'Next Monthly Payment:', value: monthlyPayment.toFixed(2) },
+      { label: 'Minimum Payment:', value: minimumPayment.toFixed(2) },
       { label: 'Monthly Interest Paid:', value: monthlyInterest.toFixed(2) },
       { label: 'Monthly Principal Paid:', value: monthlyPrincipal.toFixed(2) },
       { label: 'Total Projected Interest:', value: interestPaid.toFixed(2) }
@@ -166,16 +163,23 @@ class CalcDebtComp extends React.Component {
       alert(`Payment amount must be at least $${minimumPayment}.`);
       return;
     }
-  
-    const newLoanTerm = loanTerm - 1;
-    const newTotalDebt = totalDebt - floatPaymentAmount;
+    
+    let newTotalDebt = totalDebt - floatPaymentAmount;
     const newInterestPaid = (interestRate / 1200) * newTotalDebt;
-    const newMinPayment = parseFloat(((newTotalDebt * 0.01) + newInterestPaid).toFixed(2));
-    const newMonthlyPrincipal = newTotalDebt / newLoanTerm;
+    const newMinPayment = parseFloat((newTotalDebt * 0.01).toFixed(2));
+    let newLoanTerm = loanTerm - 1;
+    const newMonthlyPrincipal = newTotalDebt / (newLoanTerm);
     const newMonthlyPayment = newMonthlyPrincipal + newInterestPaid;
     const newBalance = parseFloat((newTotalDebt - newMonthlyPrincipal).toFixed(2));
     const newPayments = [...this.state.payments, floatPaymentAmount.toFixed(2)];
-  
+
+    if (newTotalDebt <= 0) {
+      alert("Congrats! You paid off your debt!")
+      newLoanTerm = 1;
+      newTotalDebt = 0.00;
+    }
+
+    this.scrollToTop();
     this.setState(
       {
         payments: newPayments,
@@ -186,7 +190,7 @@ class CalcDebtComp extends React.Component {
         monthlyPrincipal: parseFloat(newMonthlyPrincipal.toFixed(2)),
         balance: newBalance,
         paymentAmount: "0",
-        minimumPayment: newMinPayment,
+        minimumPayment: parseFloat((newMinPayment + newInterestPaid).toFixed(2)),
       }
     );
   }
@@ -204,11 +208,10 @@ class CalcDebtComp extends React.Component {
           <h3>Make a Payment to Recalculate Debt</h3>
           <form onSubmit={(event) => {
             this.makePayment(event, paymentAmount);
-            this.scrollToTop();
           }}>
             <label htmlFor="paymentAmount">Payment Amount:</label>
             <input type="number" id="paymentAmount" name="paymentAmount" step={0.01} onChange={this.handleAmountChange} value={paymentAmount || ""}/>
-            <button type="submit">Submit</button>
+            <button type="submit" >Submit</button>
           </form>
         </div>
         <div className='payment-history fade-in'>
