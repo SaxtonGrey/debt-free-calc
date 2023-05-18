@@ -37,7 +37,8 @@ class DebtFormComp extends React.Component {
         required: true,
         pattern: "[0-9]*",
         type: "number",
-        step: 0.01
+        step: 0.01,
+        min: 0.0
       },
       {
         label: "Loan Term In Months",
